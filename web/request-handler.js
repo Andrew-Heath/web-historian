@@ -17,7 +17,13 @@ exports.handleRequest = function (req, res) {
   if (req.method === 'GET') {
     if (urlParts.pathname === '/') {
       fs.readFile(archive.paths.siteAssets + '/index.html', 'utf-8', (err, data) => {
-        if (err) { return console.log(err); }
+        if (err) { return console.log('error', err); }
+        res.writeHead(statusCode, header);
+        res.end(data);
+      });
+    } else if (urlParts.pathname === '/styles.css') {
+      fs.readFile(archive.paths.siteAssets + urlParts.pathname, 'utf-8', (err, data) => {
+        if (err) { return console.log('error', err); }
         res.writeHead(statusCode, header);
         res.end(data);
       });
@@ -25,7 +31,7 @@ exports.handleRequest = function (req, res) {
       archive.isUrlArchived(urlParts.pathname, (exists) => {
         if (exists) {
           fs.readFile(archive.paths.archivedSites + urlParts.pathname, 'utf-8', (err, data) => {
-            if (err) { return console.log(err); }
+            if (err) { return console.log('error', err); }
             res.writeHead(statusCode, header);
             res.end(data);
           });
@@ -41,25 +47,35 @@ exports.handleRequest = function (req, res) {
       var data = chunk.toString('utf-8').substr(4);
 
       archive.isUrlInList(data, (exists) => {
-        if (exists) {
+        if (!exists) {
+          archive.addUrlToList(data, () => {
+          });
           fs.readFile(archive.paths.siteAssets + '/loading.html', 'utf-8', (err, data) => {
-            if (err) { return console.log(err); }
+            if (err) { return console.log('error', err); }
+            statusCode = 302;
             res.writeHead(statusCode, header);
             res.end(data);
           });
         } else {
-          archive.addUrlToList(data);
+          archive.isUrlArchived(data, (exists) => {
+            if (exists) {
+              fs.readFile(archive.paths.archivedSites + '/' + data, 'utf-8', (err, data) => {
+                if (err) { return console.log('error', err); }
+                res.writeHead(statusCode, header);
+                res.end(data);
+              });
+            } else {
+              fs.readFile(archive.paths.siteAssets + '/loading.html', 'utf-8', (err, data) => {
+                if (err) { return console.log('error', err); }
+                res.writeHead(statusCode, header);
+                res.end(data);
+              });
+            }
+          });
         }
       });
     });
-    req.on('end', () => { 
-      fs.readFile(archive.paths.siteAssets + '/loading.html', 'utf-8', (err, data) => {
-        if (err) { return console.log(err); }
-        statusCode = 302;
-        res.writeHead(statusCode, header);
-        res.end(data);
-      });
-    });
+    req.on('end', () => {});
   }
 };
 

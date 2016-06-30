@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
+var request = require('request');
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -27,8 +28,11 @@ exports.initialize = function(pathsObj) {
 
 exports.readListOfUrls = function(cb) {
   fs.readFile(exports.paths.list, 'utf-8', (err, data) => {
-    if (err) { return console.log(err); }
+    if (err) { return console.log('readList/readFile error', err); }
     var output = data.split('\n');
+    if (output[output.length - 1] === '') {
+      output.pop();
+    }
     cb(output.slice());
   });
 };
@@ -45,7 +49,7 @@ exports.isUrlInList = function(checkUrl, cb) {
 
 exports.addUrlToList = function(addUrl, cb) {
   fs.appendFile(exports.paths.list, addUrl + '\n', 'utf-8', (err) => {
-    if (err) { return console.log(err); }
+    if (err) { return console.log('addUrl/appendFile error', err); }
     if (cb) { cb(); }
   });
 };
@@ -54,7 +58,7 @@ exports.isUrlArchived = function(checkUrl, cb) {
   fs.readFile(exports.paths.archivedSites + '/' + checkUrl, 'utf-8', (err, data) => {
     if (err) {
       cb(false);
-      return console.log(err);
+      return;
     }
     cb(true);
   });
@@ -62,6 +66,14 @@ exports.isUrlArchived = function(checkUrl, cb) {
 
 exports.downloadUrls = function(urlArray) {
   _.each(urlArray, (url) => {
-
+    request('http://' + url, (err, res, body) => {
+      if (!err && res.statusCode === 200) {
+        fs.writeFile(exports.paths.archivedSites + '/' + url, body, 'utf-8', () => {
+          console.log('file saved');
+        });
+      } else {
+        console.log('download error', err);
+      }
+    });
   });
 };
