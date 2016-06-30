@@ -16,19 +16,18 @@ exports.handleRequest = function (req, res) {
   var urlParts = url.parse(req.url);
   if (req.method === 'GET') {
     if (urlParts.pathname === '/') {
-      fs.readFile(__dirname + '/public/index.html', 'utf-8', (err, data) => {
+      fs.readFile(archive.paths.siteAssets + '/index.html', 'utf-8', (err, data) => {
         if (err) { return console.log(err); }
+        res.writeHead(statusCode, header);
         res.end(data);
       });
     } else {
-      archive.isUrlInList(urlParts, (exists) => {
+      archive.isUrlArchived(urlParts.pathname, (exists) => {
         if (exists) {
-          archive.isUrlArchived(urlParts, (exists) => {
-            if (exists) {
-              // returns file in ?
-            } else {
-              // returns loading page
-            }
+          fs.readFile(archive.paths.archivedSites + urlParts.pathname, 'utf-8', (err, data) => {
+            if (err) { return console.log(err); }
+            res.writeHead(statusCode, header);
+            res.end(data);
           });
         } else {
           statusCode = 404;
@@ -37,8 +36,7 @@ exports.handleRequest = function (req, res) {
         }
       });
     } 
-  } else if (req.method === 'POST') {
-
+  // } else if (req.method === 'POST') {
   }  
 
 };
