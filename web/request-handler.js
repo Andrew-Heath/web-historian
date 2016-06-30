@@ -57,7 +57,7 @@ exports.handleRequest = function (req, res) {
         if (err) { return console.log(err); }
         statusCode = 302;
         res.writeHead(statusCode, header);
-        res.end(statusCode + '');
+        res.end(data);
       });
     });
   }
