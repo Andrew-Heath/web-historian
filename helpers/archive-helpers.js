@@ -44,13 +44,9 @@ exports.isUrlInList = function(checkUrl, cb) {
 };
 
 exports.addUrlToList = function(addUrl, cb) {
-  exports.isUrlInList(addUrl, expects => {
-    if (!expects) {
-      fs.appendFile(exports.paths.list, '\n' + addUrl, 'utf-8', (err) => {
-        if (err) { return console.log(err); }
-        cb();
-      });
-    }
+  fs.appendFile(exports.paths.list, addUrl + '\n', 'utf-8', (err) => {
+    if (err) { return console.log(err); }
+    if (cb) { cb(); }
   });
 };
 

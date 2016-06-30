@@ -36,7 +36,33 @@ exports.handleRequest = function (req, res) {
         }
       });
     } 
-  // } else if (req.method === 'POST') {
-  }  
+  } else if (req.method === 'POST') {
+    req.on('data', (chunk) => {
+      var data = chunk.toString('utf-8').substr(4);
 
+      archive.isUrlInList(data, (exists) => {
+        if (exists) {
+          fs.readFile(archive.paths.siteAssets + '/loading.html', 'utf-8', (err, data) => {
+            if (err) { return console.log(err); }
+            res.writeHead(statusCode, header);
+            res.end(data);
+          });
+        } else {
+          archive.addUrlToList(data);
+        }
+      });
+    });
+    req.on('end', () => { 
+      fs.readFile(archive.paths.siteAssets + '/loading.html', 'utf-8', (err, data) => {
+        if (err) { return console.log(err); }
+        statusCode = 302;
+        res.writeHead(statusCode, header);
+        res.end(statusCode + '');
+      });
+    });
+  }
 };
+
+
+
+
