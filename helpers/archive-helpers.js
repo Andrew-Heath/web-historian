@@ -54,7 +54,14 @@ exports.addUrlToList = function(addUrl, cb) {
   });
 };
 
-exports.isUrlArchived = function() {
+exports.isUrlArchived = function(checkUrl, cb) {
+  fs.readFile(exports.paths.archivedSites + '/' + checkUrl, 'utf-8', (err, data) => {
+    if (err) {
+      cb(false);
+      return console.log(err);
+    }
+    cb(true);
+  });
 };
 
 exports.downloadUrls = function() {
