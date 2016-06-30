@@ -35,11 +35,23 @@ exports.readListOfUrls = function(cb) {
 
 exports.isUrlInList = function(checkUrl, cb) {
   exports.readListOfUrls(urls => {
-    cb(_.indexOf(urls, checkUrl) ? false : true);
+    if (_.indexOf(urls, checkUrl) > -1) {
+      cb(true);
+    } else {
+      cb(false);
+    }
   });
 };
 
-exports.addUrlToList = function() {
+exports.addUrlToList = function(addUrl, cb) {
+  exports.isUrlInList(addUrl, expects => {
+    if (!expects) {
+      fs.appendFile(exports.paths.list, '\n' + addUrl, 'utf-8', (err) => {
+        if (err) { return console.log(err); }
+        cb();
+      });
+    }
+  });
 };
 
 exports.isUrlArchived = function() {
